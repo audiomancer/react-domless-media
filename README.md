@@ -1,16 +1,5 @@
 # react-domless-media
 
-[![Travis][build-badge]][build]
-[![npm package][npm-badge]][npm]
-[![Coveralls][coveralls-badge]][coveralls]
+[![npm package][https://img.shields.io/npm/v/react-domless-media.png?style=flat-square]][https://www.npmjs.org/package/react-domless-media]
 
-Describe react-domless-media here.
-
-[build-badge]: https://img.shields.io/travis/user/repo/master.png?style=flat-square
-[build]: https://travis-ci.org/user/repo
-
-[npm-badge]: https://img.shields.io/npm/v/npm-package.png?style=flat-square
-[npm]: https://www.npmjs.org/package/npm-package
-
-[coveralls-badge]: https://img.shields.io/coveralls/user/repo/master.png?style=flat-square
-[coveralls]: https://coveralls.io/github/user/repo
+Media query container component for React, with no extra DOM nodes!
