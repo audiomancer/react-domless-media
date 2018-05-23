@@ -37,6 +37,12 @@
   "repository": "audiomancer/react-domless-media",
   "keywords": [
     "react",
-    "media"
+    "media",
+    "media query",
+    "media queries",
+    "css",
+    "responsive",
+    "RWD",
+    "component"
   ]
 }
