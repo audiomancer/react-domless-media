@@ -1,17 +1,7 @@
 # Media query container component for React, with no extra DOM nodes!
 
-[![Travis][build-badge]][build]
-[![npm package][npm-badge]][npm]
-[![Coveralls][coveralls-badge]][coveralls]
-
-[build-badge]: https://img.shields.io/travis/user/repo/master.png?style=flat-square
-[build]: https://travis-ci.org/user/repo
-
-[npm-badge]: https://img.shields.io/npm/v/npm-package.png?style=flat-square
+![npm](https://img.shields.io/badge/npm-v1.1.0-blue.svg?longCache=true&style=flat-square)
 [npm]: https://www.npmjs.org/package/npm-package
-
-[coveralls-badge]: https://img.shields.io/coveralls/user/repo/master.png?style=flat-square
-[coveralls]: https://coveralls.io/github/user/repo
 
 ## Introduction
 
@@ -19,11 +9,15 @@ The goal of react-domless-media is to provide DOM-transparent css media query co
 
 **How does it work?**
 
-Instead of creating its own DOM node and applying css styles to it, it applies them to all immediate DOM nodes of all provided children, if they have any. When react fragment is provided as a child, it recursively extracts children elements first, until immediate DOM nodes are found. Then, if given media query conditions would **not** be met, all children would receive `display: none !important`.
+Instead of creating its own DOM node and applying css styles to it, it applies them to all immediate DOM nodes of all provided react components, if they have any. When react fragment is provided as a prop, it recursively extracts children components first, until immediate DOM nodes are found. This causes:
 
-**What can be passed as children?**
+a) All components provided as `matching` would receive `display: none !important` if given media query conditions would **not** be met.
+a) All components provided as `nonMatching` would receive `display: none !important` if given media query conditions **would** be met.
 
-React-domless-media accepts statically or dynamically generated single or multiple react elements, components or react fragments as children. It would not break if due to dynamic application logic, all children would be temporary removed.
+
+**What can be passed as component props?**
+
+React-domless-media accepts statically or dynamically generated single or multiple react components or react fragments as props. It would not break if due to dynamic application logic, all would be temporary removed.
 
 **Nesting many react-domless-media components**
 
@@ -67,10 +61,10 @@ Single-instance
 import domlessMedia from 'react-domless-media'
 
 const mediaQueries = {
-  LARGE: 'screen and (min-width: 1024px)',
-  MEDIUM: 'screen and (max-width: 1023px)',
-  SMALL: 'screen and (max-width: 700px)',
-  MICRO: 'screen and (max-width: 400px)'
+	LARGE: 'screen and (min-width: 1024px)',
+	MEDIUM: 'screen and (max-width: 1023px)',
+	SMALL: 'screen and (max-width: 700px)',
+	MICRO: 'screen and (max-width: 400px)'
 }
 
 const DOMLessMedia = domlessMedia(mediaQueries)
@@ -82,14 +76,14 @@ Multiple instances
 import domlessMedia from 'react-domless-media'
 
 const mediaQueries = {
-  LARGE: 'screen and (min-width: 1024px)',
-  MEDIUM: 'screen and (max-width: 1023px)',
-  SMALL: 'screen and (max-width: 700px)',
-  MICRO: 'screen and (max-width: 400px)'
+	LARGE: 'screen and (min-width: 1024px)',
+	MEDIUM: 'screen and (max-width: 1023px)',
+	SMALL: 'screen and (max-width: 700px)',
+	MICRO: 'screen and (max-width: 400px)'
 }
 
 const mediaQueries2 = {
-  MID: 'screen and (min-height: 500px) and (max-height: 900px)'
+	MID: 'screen and (min-height: 500px) and (max-height: 900px)'
 }
 
 export const DOMLessMedia = domlessMedia(mediaQueries)
@@ -99,14 +93,41 @@ export const DOMLessMedia2 = domlessMedia(mediaQueries2)
 **Using in application**
 
 In order to select adequate media query, you must provide it as `media` prop. It must be the exact name of the key of given media property from media queries object of that particular instance.
+You must provide at least one react component as either matching or nonMatching prop, examples below. Remember to wrap multiple components in `React.Fragment`!
 
 ```jsx
 import DOMLessMedia from './DOMLessMedia.js'
 
-<DOMLessMedia media={'LARGE'}>
-  <DesktopMenu menuItems={menuItems} />
-  <SearchDesktop />
-  <LoginDesktop />
-</DOMLessMedia>
+<DOMLessMedia
+	media={'LARGE'}
+	matching={<DesktopMenu menuItems={menuItems} />}
+/>
 ```
-In the example above, all children of `DOMLessMedia` component would be displayed only in `screen and (min-width: 1024px)`.
+In the example above, `DesktopMenu` component would be displayed only in `screen and (min-width: 1024px)`.
+
+```jsx
+import DOMLessMedia from './DOMLessMedia.js'
+
+<DOMLessMedia
+	media={'MICRO'}
+	matching={<LogotypeSmall />}
+	nonMatching={<LogotypeBig />}
+/>
+```
+In the example above, `LogotypeSmall` component would be displayed only in `screen and (max-width: 400px)`, otherwise `LogotypeBig` would be displayed.
+
+```jsx
+import DOMLessMedia from './DOMLessMedia.js'
+
+<DOMLessMedia
+	media={'MICRO'}
+	matching={
+		<React.Fragment>
+			<DesktopMenu menuItems={menuItems} />
+			<SearchDesktop />
+			<LoginDesktop />
+		</React.Fragment>
+		}
+/>
+```
+In the example above, all children of `DOMLessMedia` component would be displayed only in `screen and (min-width: 1024px)`. Remember to wrap multiple components in `React.Fragment`!
