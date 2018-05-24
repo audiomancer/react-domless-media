@@ -1,5 +1,5 @@
 <p align="center"> 
-<a href=""><img src="https://user-images.githubusercontent.com/39003780/40459621-b33df2e4-5f02-11e8-9eec-38409dba4801.png" /></a>
+<a href="https://github.com/audiomancer/react-domless-media"><img src="https://user-images.githubusercontent.com/39003780/40459621-b33df2e4-5f02-11e8-9eec-38409dba4801.png" /></a>
 </p>
 
 # Media query container component for React, with no extra DOM nodes!
