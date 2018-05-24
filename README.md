@@ -13,10 +13,11 @@ The goal of react-domless-media is to provide DOM-transparent css media query co
 
 **How does it work?**
 
-Instead of creating its own DOM node and applying css styles to it, it applies them to all immediate DOM nodes of all provided react components, if they have any. When react fragment is provided as a prop, it recursively extracts children components first, until immediate DOM nodes are found. This causes:
+Instead of creating its own DOM node and applying css styles to it, it applies them to all immediate DOM nodes of all provided react components, if they have any. When react fragment is provided as a prop, it recursively extracts children components first, until immediate DOM nodes are found. This causes the following:
 
 a) All components provided as `matching` would receive `display: none !important` if given media query conditions would **not** be met.
-a) All components provided as `nonMatching` would receive `display: none !important` if given media query conditions **would** be met.
+
+b) All components provided as `nonMatching` would receive `display: none !important` if given media query conditions **would** be met.
 
 
 **What can be passed as component props?**
