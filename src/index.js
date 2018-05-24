@@ -18,19 +18,39 @@ export default function domlessMedia(mediaQueries) {
 		throw error
 	}
 
+	function oneOfTwo(props, propName, componentName) {
+		if (!props.matching && !props.nonMatching) {
+			return new Error(
+				`At least one of \`matching\` or \`nonMatching\` is required in ${componentName}.`
+			)
+		} else {
+			PropTypes.checkPropTypes(
+				{
+					matching: PropTypes.element,
+					nonMatching: PropTypes.element
+				},
+				props,
+				'prop',
+				componentName
+			)
+		}
+	}
+
 	const hash = hashSum(JSON.stringify(mediaQueries).replace(/\s+/g, ' '))
 
-	return class extends React.Component {
+	return class DOMlessMedia extends React.Component {
 		static propTypes = {
-			children: PropTypes.oneOfType([
-				PropTypes.arrayOf(PropTypes.element),
-				PropTypes.element
-			]),
+			matching: oneOfTwo,
+			nonMatching: oneOfTwo,
 			media: PropTypes.oneOf(Object.keys(mediaQueries)).isRequired
 		}
 
 		constructor(props) {
 			super(props)
+
+			if (!props.matching && !props.nonMatching) {
+				return new Error(`One of 'matching' or 'nonMatching' is required.`)
+			}
 
 			if (!document.getElementById(`domless_media_${hash}`)) {
 				const styles = Object.keys(mediaQueries)
@@ -38,7 +58,10 @@ export default function domlessMedia(mediaQueries) {
 						key =>
 							`@media not ${
 								mediaQueries[key]
-							} {.domlessMedia-${hash}-${key} {display: none !important;}} `
+							} {.domlessMedia-${hash}-matches-${key} {display: none !important;}}
+							@media ${
+								mediaQueries[key]
+							} {.domlessMedia-${hash}-mismatches-${key} {display: none !important;}} `
 					)
 					.join('')
 
@@ -51,47 +74,74 @@ export default function domlessMedia(mediaQueries) {
 		}
 
 		shouldComponentUpdate(nextProps) {
-			return this.props.children !== nextProps.children
+			return (
+				this.props.matching !== nextProps.matching ||
+				this.props.nonMatching !== nextProps.nonMatching
+			)
 		}
 
-		handleProps = () => {
-			const wrappedChildren = Array.isArray(this.props.children)
-				? this.props.children
-				: [this.props.children]
-
-			this.items = (function flattener(arr) {
+		handler = () => {
+			function flattener(arr) {
 				return arr.reduce(
 					(memo, key) =>
 						memo.concat(
-							key.type === React.Fragment ? flattener(key.props.children) : key
+							key.type === React.Fragment
+								? flattener(
+										Array.isArray(key.props.children)
+											? key.props.children
+											: [key.props.children]
+								  )
+								: key
 						),
 					[]
 				)
-			})(wrappedChildren)
+			}
 
-			this.selectors = this.items.map(React.createRef)
-		}
+			function childWrapper(items, selectors) {
+				return items.map((child, index) => (
+					<SelectorWrapper ref={selectors[index]} key={index}>
+						{child}
+					</SelectorWrapper>
+				))
+			}
 
-		render() {
-			this.handleProps()
+			if (this.props.matching) {
+				this.matchingItems = flattener([this.props.matching])
+				this.matches = this.matchingItems.map(React.createRef)
+			}
+
+			if (this.props.nonMatching) {
+				this.nonMatchingItems = flattener([this.props.nonMatching])
+				this.mismatches = this.nonMatchingItems.map(React.createRef)
+			}
+
 			return (
 				<React.Fragment>
-					{this.items.map((child, index) => {
-						return (
-							<SelectorWrapper ref={this.selectors[index]} key={index}>
-								{child}
-							</SelectorWrapper>
-						)
-					})}
+					{this.props.matching &&
+						childWrapper(this.matchingItems, this.matches)}
+					{this.props.nonMatching &&
+						childWrapper(this.nonMatchingItems, this.mismatches)}
 				</React.Fragment>
 			)
 		}
 
+		render() {
+			return this.handler()
+		}
+
 		applyClasses = () => {
-			this.selectors.forEach(key => {
-				const el = ReactDOM.findDOMNode(key.current)
-				el && el.classList.add(`domlessMedia-${hash}-${this.props.media}`)
-			})
+			const classHandler = (group, groupName) => {
+				group.forEach(key => {
+					const el = ReactDOM.findDOMNode(key.current)
+					el &&
+						el.classList.add(
+							`domlessMedia-${hash}-${groupName}-${this.props.media}`
+						)
+				})
+			}
+
+			this.matches && classHandler(this.matches, 'matches')
+			this.mismatches && classHandler(this.mismatches, 'mismatches')
 		}
 
 		componentDidMount() {
@@ -109,11 +159,11 @@ class SelectorWrapper extends React.Component {
 		children: PropTypes.element
 	}
 
-	render() {
-		return this.props.children
-	}
-
 	shouldComponentUpdate(nextProps) {
 		return this.props.children !== nextProps.children
+	}
+
+	render() {
+		return this.props.children
 	}
 }
