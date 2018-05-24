@@ -82,19 +82,19 @@ export default function domlessMedia(mediaQueries) {
 
 		handler = () => {
 			function flattener(arr) {
-				return arr.reduce(
-					(memo, key) =>
-						memo.concat(
-							key.type === React.Fragment
-								? flattener(
-										Array.isArray(key.props.children)
-											? key.props.children
-											: [key.props.children]
-								  )
-								: key
-						),
-					[]
-				)
+				return []
+					.concat(arr)
+					.reduce(
+						(memo, node) =>
+							node.type === React.Fragment
+								? node.props.children
+									? memo.concat(flattener(node.props.children))
+									: memo
+								: typeof node === 'string'
+									? memo
+									: memo.concat(node),
+						[]
+					)
 			}
 
 			function childWrapper(items, selectors) {
@@ -105,14 +105,31 @@ export default function domlessMedia(mediaQueries) {
 				))
 			}
 
+			class RnError extends Error {
+				constructor(str) {
+					super(str)
+					this.message = `Failed prop type: Invalid props supplied to \`${str}\`, expected at least one React node.`
+				}
+			}
+
 			if (this.props.matching) {
-				this.matchingItems = flattener([this.props.matching])
-				this.matches = this.matchingItems.map(React.createRef)
+				this.matchingItems = flattener(this.props.matching)
+
+				if (this.matchingItems.length !== 0) {
+					this.matches = this.matchingItems.map(React.createRef)
+				} else {
+					throw new RnError('matching')
+				}
 			}
 
 			if (this.props.nonMatching) {
-				this.nonMatchingItems = flattener([this.props.nonMatching])
-				this.mismatches = this.nonMatchingItems.map(React.createRef)
+				this.nonMatchingItems = flattener(this.props.nonMatching)
+
+				if (this.nonMatchingItems.length !== 0) {
+					this.mismatches = this.nonMatchingItems.map(React.createRef)
+				} else {
+					throw new RnError('nonMatching')
+				}
 			}
 
 			return (
