@@ -1,9 +1,12 @@
+<p align="center"> 
+	<img src="https://s9.postimg.cc/jtwpwgckf/0_OUOUIOP.png">
+</p>
+
 # Media query container component for React, with no extra DOM nodes!
 
-![npm](https://img.shields.io/badge/npm-v1.1.0-blue.svg?longCache=true&style=flat-square)
-[npm]: https://www.npmjs.org/package/npm-package
+[![npm package](https://img.shields.io/badge/npm-v1.1.0-blue.svg?longCache=true&style=flat-square)](https://www.npmjs.com/package/react-domless-media)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg?longCache=true&style=flat-square)](https://en.wikipedia.org/wiki/MIT_License)
 
-[![0_OUOUIOP.png](https://s9.postimg.cc/jtwpwgckf/0_OUOUIOP.png)](https://postimg.cc/image/72ijpy2sb/)
 ## Introduction
 
 The goal of react-domless-media is to provide DOM-transparent css media query container for react.js. It is not creating any DOM nodes on its own, thus it does not disturb already existing styling.
