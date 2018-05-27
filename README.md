@@ -5,7 +5,7 @@
 # Media query container component for React, with no extra DOM nodes!
 
 [![npm package](https://img.shields.io/badge/npm-v1.1.2-blue.svg?longCache=true&style=flat-square)](https://www.npmjs.com/package/react-domless-media)
-[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg?longCache=true&style=flat-square)](https://en.wikipedia.org/wiki/MIT_License)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg?longCache=true&style=flat-square)](https://github.com/audiomancer/react-domless-media/blob/master/LICENSE)
 
 ## Introduction
 
