@@ -19,15 +19,15 @@ export default function domlessMedia(mediaQueries) {
 	}
 
 	function oneOfTwo(props, propName, componentName) {
-		if (!props.matching && !props.nonMatching) {
+		if (!props.match && !props.mismatch) {
 			return new Error(
-				`At least one of \`matching\` or \`nonMatching\` is required in ${componentName}.`
+				`At least one prop \`match\` or \`mismatch\` is required in ${componentName}.`
 			)
 		} else {
 			PropTypes.checkPropTypes(
 				{
-					matching: PropTypes.element,
-					nonMatching: PropTypes.element
+					match: PropTypes.element,
+					mismatch: PropTypes.element
 				},
 				props,
 				'prop',
@@ -40,16 +40,16 @@ export default function domlessMedia(mediaQueries) {
 
 	return class DOMlessMedia extends React.Component {
 		static propTypes = {
-			matching: oneOfTwo,
-			nonMatching: oneOfTwo,
+			match: oneOfTwo,
+			mismatch: oneOfTwo,
 			media: PropTypes.oneOf(Object.keys(mediaQueries)).isRequired
 		}
 
 		constructor(props) {
 			super(props)
 
-			if (!props.matching && !props.nonMatching) {
-				return new Error(`One of 'matching' or 'nonMatching' is required.`)
+			if (!props.match && !props.mismatch) {
+				return new Error(`One of 'match' or 'mismatch' is required.`)
 			}
 
 			if (!document.getElementById(`domless_media_${hash}`)) {
@@ -75,8 +75,8 @@ export default function domlessMedia(mediaQueries) {
 
 		shouldComponentUpdate(nextProps) {
 			return (
-				this.props.matching !== nextProps.matching ||
-				this.props.nonMatching !== nextProps.nonMatching
+				this.props.match !== nextProps.match ||
+				this.props.mismatch !== nextProps.mismatch
 			)
 		}
 
@@ -112,32 +112,31 @@ export default function domlessMedia(mediaQueries) {
 				}
 			}
 
-			if (this.props.matching) {
-				this.matchingItems = flattener(this.props.matching)
+			if (this.props.match) {
+				this.itemsForMatch = flattener(this.props.match)
 
-				if (this.matchingItems.length !== 0) {
-					this.matches = this.matchingItems.map(React.createRef)
+				if (this.itemsForMatch.length !== 0) {
+					this.matches = this.itemsForMatch.map(React.createRef)
 				} else {
-					throw new RnError('matching')
+					throw new RnError('match')
 				}
 			}
 
-			if (this.props.nonMatching) {
-				this.nonMatchingItems = flattener(this.props.nonMatching)
+			if (this.props.mismatch) {
+				this.itemsForMismatch = flattener(this.props.mismatch)
 
-				if (this.nonMatchingItems.length !== 0) {
-					this.mismatches = this.nonMatchingItems.map(React.createRef)
+				if (this.itemsForMismatch.length !== 0) {
+					this.mismatches = this.itemsForMismatch.map(React.createRef)
 				} else {
-					throw new RnError('nonMatching')
+					throw new RnError('mismatch')
 				}
 			}
 
 			return (
 				<React.Fragment>
-					{this.props.matching &&
-						childWrapper(this.matchingItems, this.matches)}
-					{this.props.nonMatching &&
-						childWrapper(this.nonMatchingItems, this.mismatches)}
+					{this.props.match && childWrapper(this.itemsForMatch, this.matches)}
+					{this.props.mismatch &&
+						childWrapper(this.itemsForMismatch, this.mismatches)}
 				</React.Fragment>
 			)
 		}

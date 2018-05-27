@@ -15,9 +15,9 @@ The goal of react-domless-media is to provide DOM-transparent css media query co
 
 Instead of creating its own DOM node and applying css styles to it, it applies them to all immediate DOM nodes of all provided react components, if they have any. When react fragment is provided as a prop, it recursively extracts children components first, until immediate DOM nodes are found. This causes the following:
 
-a) All components provided as `matching` would receive `display: none !important` if given media query conditions would **not** be met.
+a) All components provided as `match` would receive `display: none !important` if given media query conditions would **not** be met.
 
-b) All components provided as `nonMatching` would receive `display: none !important` if given media query conditions **would** be met.
+b) All components provided as `mismatch` would receive `display: none !important` if given media query conditions **would** be met.
 
 
 **What can be passed as component props?**
@@ -98,14 +98,14 @@ export const DOMLessMedia2 = domlessMedia(mediaQueries2)
 **Using in application**
 
 In order to select adequate media query, you must provide it as `media` prop. It must be the exact name of the key of given media property from media queries object of that particular instance.
-You must provide at least one react component as either matching or nonMatching prop, examples below. Remember to wrap multiple components in `React.Fragment`!
+You must provide at least one react component as either match or mismatch prop, examples below. Remember to wrap multiple components in `React.Fragment`!
 
 ```jsx
 import DOMLessMedia from './DOMLessMedia.js'
 
 <DOMLessMedia
 	media={'LARGE'}
-	matching={<DesktopMenu menuItems={menuItems} />}
+	match={<DesktopMenu menuItems={menuItems} />}
 />
 ```
 In the example above, `DesktopMenu` component would be displayed only in `screen and (min-width: 1024px)`.
@@ -115,8 +115,8 @@ import DOMLessMedia from './DOMLessMedia.js'
 
 <DOMLessMedia
 	media={'MICRO'}
-	matching={<LogotypeSmall />}
-	nonMatching={<LogotypeBig />}
+	match={<LogotypeSmall />}
+	mismatch={<LogotypeBig />}
 />
 ```
 In the example above, `LogotypeSmall` component would be displayed only in `screen and (max-width: 400px)`, otherwise `LogotypeBig` would be displayed.
@@ -126,7 +126,7 @@ import DOMLessMedia from './DOMLessMedia.js'
 
 <DOMLessMedia
 	media={'MICRO'}
-	matching={
+	match={
 		<React.Fragment>
 			<DesktopMenu menuItems={menuItems} />
 			<SearchDesktop />
