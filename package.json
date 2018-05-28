@@ -25,8 +25,7 @@
     "react": "16.x"
   },
   "devDependencies": {
-    "ajv": "^6.0.0",
-    "inferno": "^3.0.0",
+    "ajv": "^6.5.0",
     "nwb": "^0.22.0",
     "prop-types": "^15.6.1",
     "react": "^16.3.2",
