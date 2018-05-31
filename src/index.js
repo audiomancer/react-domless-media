@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import hashSum from 'hash-sum'
 
@@ -71,115 +70,124 @@ export default function domlessMedia(mediaQueries) {
 				this.styleNode.innerHTML = styles
 				document.getElementsByTagName('head')[0].appendChild(this.styleNode)
 			}
+
+			this.matchStart = React.createRef()
+			this.matchEnd = React.createRef()
+
+			this.mismatchStart = React.createRef()
+			this.mismatchEnd = React.createRef()
+
+			this.markerStyle = {
+				visibility: 'hidden',
+				display: 'none'
+			}
+
+			this.state = {
+				markers: true
+			}
 		}
 
-		shouldComponentUpdate(nextProps) {
+		shouldComponentUpdate(nextProps, nextState) {
 			return (
 				this.props.match !== nextProps.match ||
-				this.props.mismatch !== nextProps.mismatch
-			)
-		}
-
-		handler = () => {
-			function flattener(arr) {
-				return []
-					.concat(arr)
-					.reduce(
-						(memo, node) =>
-							node.type === React.Fragment
-								? node.props.children
-									? memo.concat(flattener(node.props.children))
-									: memo
-								: typeof node === 'string'
-									? memo
-									: memo.concat(node),
-						[]
-					)
-			}
-
-			function childWrapper(items, selectors) {
-				return items.map((child, index) => (
-					<SelectorWrapper ref={selectors[index]} key={index}>
-						{child}
-					</SelectorWrapper>
-				))
-			}
-
-			class RnError extends Error {
-				constructor(str) {
-					super(str)
-					this.message = `Failed prop type: Invalid props supplied to \`${str}\`, expected at least one React node.`
-				}
-			}
-
-			if (this.props.match) {
-				this.itemsForMatch = flattener(this.props.match)
-
-				if (this.itemsForMatch.length !== 0) {
-					this.matches = this.itemsForMatch.map(React.createRef)
-				} else {
-					throw new RnError('match')
-				}
-			}
-
-			if (this.props.mismatch) {
-				this.itemsForMismatch = flattener(this.props.mismatch)
-
-				if (this.itemsForMismatch.length !== 0) {
-					this.mismatches = this.itemsForMismatch.map(React.createRef)
-				} else {
-					throw new RnError('mismatch')
-				}
-			}
-
-			return (
-				<React.Fragment>
-					{this.props.match && childWrapper(this.itemsForMatch, this.matches)}
-					{this.props.mismatch &&
-						childWrapper(this.itemsForMismatch, this.mismatches)}
-				</React.Fragment>
+				this.props.mismatch !== nextProps.mismatch ||
+				this.state.markers !== nextState.markers
 			)
 		}
 
 		render() {
-			return this.handler()
+			return (
+				<React.Fragment>
+					{this.state.markers && (
+						<span
+							ref={this.matchStart}
+							style={this.markerStyle}
+							hidden
+							aria-hidden="true"
+						/>
+					)}
+					{this.props.match}
+					{this.state.markers && (
+						<span
+							ref={this.matchEnd}
+							style={this.markerStyle}
+							hidden
+							aria-hidden="true"
+						/>
+					)}
+
+					{this.state.markers && (
+						<span
+							ref={this.mismatchStart}
+							style={this.markerStyle}
+							hidden
+							aria-hidden="true"
+						/>
+					)}
+					{this.props.mismatch}
+					{this.state.markers && (
+						<span
+							ref={this.mismatchEnd}
+							style={this.markerStyle}
+							hidden
+							aria-hidden="true"
+						/>
+					)}
+				</React.Fragment>
+			)
 		}
 
 		applyClasses = () => {
+			function getNextSiblings(el, limiter) {
+				var sibs = []
+				while ((el = el.nextElementSibling) && el !== limiter) {
+					sibs.push(el)
+				}
+				return sibs
+			}
+
 			const classHandler = (group, groupName) => {
-				group.forEach(key => {
-					const el = ReactDOM.findDOMNode(key.current)
-					el &&
-						el.classList.add(
-							`domlessMedia-${hash}-${groupName}-${this.props.media}`
-						)
+				group.forEach(el => {
+					el.classList.add(
+						`domlessMedia-${hash}-${groupName}-${this.props.media}`
+					)
 				})
 			}
 
-			this.matches && classHandler(this.matches, 'matches')
-			this.mismatches && classHandler(this.mismatches, 'mismatches')
+			if (this.props.match) {
+				const matched = getNextSiblings(
+					this.matchStart.current,
+					this.matchEnd.current
+				)
+				classHandler(matched, 'matches')
+			}
+
+			if (this.props.mismatch) {
+				const mismatched = getNextSiblings(
+					this.mismatchStart.current,
+					this.mismatchEnd.current
+				)
+				classHandler(mismatched, 'mismatches')
+			}
 		}
 
 		componentDidMount() {
 			this.applyClasses()
+			this.setState({ markers: false })
 		}
 
-		componentDidUpdate() {
-			this.applyClasses()
+		componentDidUpdate(prevProps) {
+			if (
+				this.props.match !== prevProps.match ||
+				this.props.mismatch !== prevProps.mismatch
+			) {
+				this.setState({ markers: true })
+			}
+
+			if (this.state.markers) {
+				this.applyClasses()
+				this.setState({ markers: false })
+			}
 		}
-	}
-}
-
-class SelectorWrapper extends React.Component {
-	static propTypes = {
-		children: PropTypes.element
-	}
-
-	shouldComponentUpdate(nextProps) {
-		return this.props.children !== nextProps.children
-	}
-
-	render() {
-		return this.props.children
 	}
 }
