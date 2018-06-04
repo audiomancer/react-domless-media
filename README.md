@@ -9,24 +9,18 @@
 
 ## Introduction
 
-The goal of react-domless-media is to provide DOM-transparent css media query container for react.js. It is not creating any DOM nodes on its own, thus it does not disturb already existing styling.
+The goal of react-domless-media is to provide DOM-transparent javascript media query container for react.js. It is not creating any DOM nodes on its own, thus it does not disturb already existing styling.
 
 **How does it work?**
 
-Instead of creating its own DOM node and applying css styles to it, it applies them to all immediate DOM nodes of all provided react components, if they have any. When react fragment is provided as a prop, it recursively extracts children components first, until immediate DOM nodes are found. This causes the following:
+a) All components provided as `match` would be rendered if provided conditions **would** be met.
 
-a) All components provided as `match` would receive `display: none !important` if given media query conditions would **not** be met.
-
-b) All components provided as `mismatch` would receive `display: none !important` if given media query conditions **would** be met.
+b) All components provided as `mismatch` would be rendered if provided conditions would **not** be met.
 
 
 **What can be passed as component props?**
 
-React-domless-media accepts statically or dynamically generated single or multiple react components or react fragments as props. It would not break if due to dynamic application logic, all would be temporary removed.
-
-**Nesting many react-domless-media components**
-
-Although technically possible, it is considered bad practice and can make a lot of mess.
+React-domless-media accepts statically or dynamically generated single or multiple react components or react fragments as props.
 
 ## Installation
 
@@ -36,24 +30,29 @@ npm i react-domless-media
 
 ## Usage
 
-React-domless-media is exporting higher order component as default export so no build-tools are required. In order to work, it requires javascript object with media queries to be passed first to the instance of this higher order component. You can use single or multiple media query objects (each should be provided to individual instance) in case of complex projects involving usage of many react apps simltaneously.
+React-domless-media is exporting higher order component as default export so no build-tools are required. In order to work, it requires custom javascript object hereinafter referred to as **media query object** to be passed first to the instance of this higher order component. You can use single or multiple media query objects (each should be provided to individual RDM HoC instance) in case of complex projects involving usage of many react apps simltaneously.
 
 **Media query object**
 
-Media query object must consist of string key - string value pairs. The css part **must** begin with media type (e.g. screen or all) and end with single or multiple logical expressions. Below are the example of proper media query objects.
+Media quey object must consists of string key - object pairs. Each sub-object must consist of at least one (min or max) property paired with value of desired resolution stored as number. Below are the examples of proper media query objects.
+
+**Min is the direct equivalent of css `min-width` and it works as `>=` and max is the direct equivalent of `max-width` and it works as `<=`**
 
 ```javascript
 const mediaQueries = {
-	LARGE: 'screen and (min-width: 1024px)',
-	MEDIUM: 'screen and (max-width: 1023px)',
-	SMALL: 'screen and (max-width: 700px)',
-	MICRO: 'screen and (max-width: 400px)'
+	LARGE: { min: 1024 },
+	MEDIUM: { max: 1023 },
+	SMALL: { max: 700 },
+	MICRO: { max: 400 }
 }
 ```
 
 ```javascript
 const mediaQueries = {
-	MID: 'all and (min-height: 500px) and (max-height: 900px)'
+	MID: {
+		min: 500,
+		max: 900
+	}
 }
 ```
 
@@ -66,10 +65,10 @@ Single-instance
 import domlessMedia from 'react-domless-media'
 
 const mediaQueries = {
-	LARGE: 'screen and (min-width: 1024px)',
-	MEDIUM: 'screen and (max-width: 1023px)',
-	SMALL: 'screen and (max-width: 700px)',
-	MICRO: 'screen and (max-width: 400px)'
+	LARGE: { min: 1024 },
+	MEDIUM: { max: 1023 },
+	SMALL: { max: 700 },
+	MICRO: { max: 400 }
 }
 
 const DOMLessMedia = domlessMedia(mediaQueries)
@@ -81,14 +80,17 @@ Multiple instances
 import domlessMedia from 'react-domless-media'
 
 const mediaQueries = {
-	LARGE: 'screen and (min-width: 1024px)',
-	MEDIUM: 'screen and (max-width: 1023px)',
-	SMALL: 'screen and (max-width: 700px)',
-	MICRO: 'screen and (max-width: 400px)'
+	LARGE: { min: 1024 },
+	MEDIUM: { max: 1023 },
+	SMALL: { max: 700 },
+	MICRO: { max: 400 }
 }
 
 const mediaQueries2 = {
-	MID: 'screen and (min-height: 500px) and (max-height: 900px)'
+	MID: {
+		min: 500,
+		max: 900
+	}
 }
 
 export const DOMLessMedia = domlessMedia(mediaQueries)
@@ -108,7 +110,7 @@ import DOMLessMedia from './DOMLessMedia.js'
 	match={<DesktopMenu menuItems={menuItems} />}
 />
 ```
-In the example above, `DesktopMenu` component would be displayed only in `screen and (min-width: 1024px)`.
+In the example above, `DesktopMenu` component would be displayed only when `window.innerWidth` would be greater than or equal to a `1024` (pixels).
 
 ```jsx
 import DOMLessMedia from './DOMLessMedia.js'
@@ -119,7 +121,17 @@ import DOMLessMedia from './DOMLessMedia.js'
 	mismatch={<LogotypeBig />}
 />
 ```
-In the example above, `LogotypeSmall` component would be displayed only in `screen and (max-width: 400px)`, otherwise `LogotypeBig` would be displayed.
+In the example above, `LogotypeSmall` component would be displayed only when `window.innerWidth` would be less than or equal to a `400` (pixels), otherwise `LogotypeBig` would be displayed.
+
+```jsx
+import DOMLessMedia2 from './DOMLessMedia2.js'
+
+<DOMLessMedia
+	media={'MID'}
+	match={<LoginDesktop />}
+/>
+```
+In the example above, `LoginDesktop` component would be displayed only when `window.innerWidth` would be greater than or equal to a `500` (pixels) and less than or equal to a `900` (pixels).
 
 ```jsx
 import DOMLessMedia from './DOMLessMedia.js'
@@ -135,4 +147,4 @@ import DOMLessMedia from './DOMLessMedia.js'
 		}
 />
 ```
-In the example above, all children of `DOMLessMedia` component would be displayed only in `screen and (min-width: 1024px)`. Remember to wrap multiple components in `React.Fragment`!
+In the example above, all children of `DOMLessMedia` component would be displayed only when `window.innerWidth` would be greater than or equal to a `1024` (pixels). Remember to wrap multiple components in `React.Fragment`!
